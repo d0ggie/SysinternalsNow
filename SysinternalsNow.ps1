@@ -357,8 +357,11 @@ Function Invoke-WebRequest-ETag
   If (($FileInfo__L | Has-Property -Name 'ModifiedTime') -And (Test-Path -Path $FilePath__Storage))
     {
     $FileInfo__F__ModifiedTime = (Get-ItemPropertyValue -Path $FilePath__Storage -Name 'LastWriteTime').ToUniversalTime()
+# Note: It is possible that there are multiple content distribution servers and
+# file timestamps are not identical between these.  Use a small deadband.
+    $FileInfo__F__ModifiedTime__Deadband = New-TimeSpan -Minutes 30
     $FileInfo__L__ModifiedTime = $FileInfo__L | Get-Property -Name 'ModifiedTime'
-    If (-Not $IgnoreLocalTimestamp -And ($FileInfo__F__ModifiedTime -Gt $FileInfo__L__ModifiedTime))
+    If (-Not $IgnoreLocalTimestamp -And (($FileInfo__F__ModifiedTime - $FileInfo__F__ModifiedTime__Deadband) -Gt $FileInfo__L__ModifiedTime))
       {
       Write-Output ('Ignored "{0}": Local timestamp newer "{1}" than remote "{2}".  Use -IgnoreLocalTimestamp to override.' -f `
         $FilePath, $FileInfo__F__ModifiedTime, $FileInfo__L__ModifiedTime)
