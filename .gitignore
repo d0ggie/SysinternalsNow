@@ -1,0 +1,3 @@
+# Note: Ignore the default Content and Content-Cache directories.
+Content/*
+Content-Cache/*
